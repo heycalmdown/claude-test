@@ -1,32 +1,8 @@
-import * as dotenv from 'dotenv';
 import * as readline from 'readline';
 import { AIHandler } from './ai-handler';
 import { ChatMessage } from './types';
 
-dotenv.config();
-
-async function main(): Promise<void> {
-  const apiKey = process.env.OPENAI_API_KEY;
-  
-  if (!apiKey) {
-    console.error('Error: OPENAI_API_KEY environment variable is required');
-    process.exit(1);
-  }
-
-  const aiHandler = new AIHandler(
-    apiKey,
-    process.env.AWS_REGION || 'ap-southeast-1'
-  );
-
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-  });
-
-  const messages: ChatMessage[] = [
-    {
-      role: "system",
-      content: `You are a helpful assistant with access to DynamoDB operations. You can get items by PK/SK and query tables by PK with optional SK prefix.
+const DEFAULT_SYSTEM_PROMPT = `You are a helpful assistant with access to DynamoDB operations. You can get items by PK/SK and query tables by PK with optional SK prefix.
 
 IMPORTANT: You have access to two DynamoDB tools:
 1. get_item: Get a specific item using PK and optional SK
@@ -52,7 +28,62 @@ USAGE EXAMPLES:
 - "Find login accounts for vendor 123" → query_table(tableName="Auth", pk="AUTH#VENDOR#123")  
 - "Find login account for vendor 123 with email user@example.com" → query_table(tableName="Auth", pk="AUTH#VENDOR#123", sk="EMAIL#user@example.com")
 
-Always use the exact PK/SK format specified above. When users mention vendor/buyer IDs or emails, construct the proper key format.`
+Always use the exact PK/SK format specified above. When users mention vendor/buyer IDs or emails, construct the proper key format.`;
+
+export async function handleOneTimeQuery(aiHandler: AIHandler, query: string, systemPrompt: string = DEFAULT_SYSTEM_PROMPT): Promise<void> {
+  const messages: ChatMessage[] = [
+    {
+      role: "system",
+      content: systemPrompt
+    },
+    {
+      role: "user",
+      content: query
+    }
+  ];
+
+  try {
+    console.log(`Processing query: ${query}`);
+    console.log('Thinking...');
+    const response = await aiHandler.chat(messages);
+    const aiResponse = response.choices[0].message.content;
+    
+    console.log(`Result: ${aiResponse}`);
+  } catch (error) {
+    console.error('Error:', (error as Error).message);
+    process.exit(1);
+  }
+}
+
+async function main(): Promise<void> {
+  const apiKey = process.env.OPENAI_API_KEY;
+  
+  if (!apiKey) {
+    console.error('Error: OPENAI_API_KEY environment variable is required');
+    process.exit(1);
+  }
+
+  const aiHandler = new AIHandler(
+    apiKey,
+    process.env.AWS_REGION
+  );
+
+  // Check if command line argument is provided for one-time execution
+  const oneTimeQuery = process.argv[2];
+  if (oneTimeQuery) {
+    await handleOneTimeQuery(aiHandler, oneTimeQuery);
+    return;
+  }
+
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+  });
+
+  const messages: ChatMessage[] = [
+    {
+      role: "system",
+      content: DEFAULT_SYSTEM_PROMPT
     }
   ];
 

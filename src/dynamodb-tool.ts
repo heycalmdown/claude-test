@@ -10,8 +10,8 @@ export class DynamoDBTool {
   private client: DynamoDBClient;
   private docClient: DynamoDBDocumentClient;
 
-  constructor(region: string = 'ap-southeast-1') {
-    this.client = new DynamoDBClient({ region });
+  constructor(region?: string) {
+    this.client = new DynamoDBClient(region ? { region } : {});
     this.docClient = DynamoDBDocumentClient.from(this.client);
   }
 

@@ -18,10 +18,9 @@ src/
 ```
 
 ## Environment Variables
-- `OPENAI_API_KEY`: OpenAI API key (required)
-- `AWS_REGION`: AWS region (default: us-east-1)
-- `AWS_ACCESS_KEY_ID`: AWS access key
-- `AWS_SECRET_ACCESS_KEY`: AWS secret key
+- `OPENAI_API_KEY`: OpenAI API key (required) - read from system environment
+- `AWS_REGION`: AWS region (default: us-east-1) - read from system environment or defaults
+- AWS credentials: Uses AWS CLI default profile or environment variables (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`)
 
 ## NPM Scripts
 - `npm run dev`: Development mode (using tsx)
@@ -62,15 +61,17 @@ src/
 - This rule applies to all projects consistently
 
 ## How to Run
-1. Set environment variables: `cp .env.example .env`
-2. Development mode: `npm run dev`
-3. Production: `npm start`
+1. Ensure `OPENAI_API_KEY` is set in your environment variables
+2. AWS credentials should be configured via AWS CLI (`aws configure`) or environment variables
+3. Development mode: `npm run dev`
+4. Production: `npm start`
 
 ## Type Checking
 TypeScript files are executed directly using tsx. No build step required.
 
 ## Important Notes
-- Program exits if OpenAI API key is missing
-- AWS credentials use environment variables or AWS CLI profile
+- Program exits if OpenAI API key is missing from environment variables
+- AWS credentials automatically loaded from ~/.aws/credentials or environment variables
 - All DynamoDB operations are asynchronous
 - JSON serialization/deserialization when calling AI tools
+- No .env file dependency - uses system environment variables directly

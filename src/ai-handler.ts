@@ -7,7 +7,7 @@ export class AIHandler {
   private dynamoTool: DynamoDBTool;
   private tools: Tool[];
 
-  constructor(apiKey: string, region: string = 'us-east-1') {
+  constructor(apiKey: string, region?: string) {
     this.openai = new OpenAI({ apiKey });
     this.dynamoTool = new DynamoDBTool(region);
     this.tools = [

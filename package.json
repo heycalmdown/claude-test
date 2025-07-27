@@ -1,0 +1,33 @@
+{
+  "name": "dynamodb-ai-handler",
+  "version": "1.0.0",
+  "description": "AI handler with DynamoDB tool integration",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "npm run build && node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "watch": "tsc --watch"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.0.0",
+    "@aws-sdk/lib-dynamodb": "^3.0.0",
+    "dotenv": "^16.6.1",
+    "openai": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.9",
+    "nodemon": "^3.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  },
+  "keywords": [
+    "ai",
+    "dynamodb",
+    "aws",
+    "handler",
+    "typescript"
+  ],
+  "author": "",
+  "license": "MIT"
+}

@@ -45,6 +45,16 @@ src/
 - **Example**: PK=`AUTH#VENDOR#123`, SK=`EMAIL#user@example.com`
 - **Usage**: Use query_table with PK and optional SK prefix to find login accounts
 
+## Shield Table Structure (Table: "Shield")
+
+### Buyer Threat Score Search
+- **Purpose**: Get buyer threat score events in chronological order
+- **PK Format**: `THREAT_SCORE#{buyer_id}`
+- **SK Format**: `EVENT#{seq}`
+- **Example**: PK=`THREAT_SCORE#5491226`, SK=`EVENT#001`
+- **Usage**: Use query_table with tableName="Shield" and pk=`THREAT_SCORE#{buyer_id}` to get all threat score events for a buyer
+- **Sort Order**: Ascending (oldest events first) - controlled by ScanIndexForward: true
+
 ## Coding Rules
 - All code written in TypeScript
 - Use strict mode

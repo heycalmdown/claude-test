@@ -97,7 +97,7 @@ export class AIHandler {
             toolResults.push({
               tool_call_id: toolCall.id,
               role: "tool",
-              content: JSON.stringify(result)
+              content: JSON.stringify(result ?? null)
             });
           } catch (error) {
             console.log(`❌ Tool call error:`, error);

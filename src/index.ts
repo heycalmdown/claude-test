@@ -7,7 +7,9 @@ const DEFAULT_SYSTEM_PROMPT = `You are a helpful assistant with access to Dynamo
 IMPORTANT: You have access to these tools:
 1. get_item: Get a specific item using PK and optional SK
 2. query_table: Query items by PK with optional SK prefix
-3. sum_property: Calculate the sum of a numeric property from an array of objects
+3. sum_property: Calculate the sum of a numeric property from an array of objects. For threat scores, always use property="amount" to sum the threat score amounts.
+   CRITICAL: You MUST explicitly pass the query_table result as the "data" parameter. The tool CANNOT access previous results automatically.
+   NEVER call sum_property without the "data" parameter - it will fail.
 
 AUTH TABLE STRUCTURE (Table name: "Auth"):
 
@@ -33,13 +35,17 @@ SHIELD TABLE STRUCTURE (Table name: "Shield"):
 - Example: PK="THREAT_SCORE#5491226", SK="EVENT#001"
 - Use query_table with tableName="Shield", pk="THREAT_SCORE#{buyer_id}", and sk="EVENT#" to get only threat score events for a buyer
 - Sort Order: Ascending (oldest events first) - controlled by ScanIndexForward: true
-- After displaying the threat score events, use sum_property tool to calculate the total threat score by summing the score property from the query results
+- After querying threat score events, use sum_property tool WITH THE QUERY RESULT DATA to calculate the total threat score
+- IMPORTANT: You must pass the entire array returned by query_table as the "data" parameter to sum_property
 
 USAGE EXAMPLES:
 - "Find buyer activities for vendor 292 and buyer 5491226" → query_table(tableName="Auth", pk="ACTIVITY#VENDOR#292#BUYER#5491226")
 - "Find login accounts for vendor 123" → query_table(tableName="Auth", pk="AUTH#VENDOR#123")  
 - "Find login account for vendor 123 with email user@example.com" → query_table(tableName="Auth", pk="AUTH#VENDOR#123", sk="EMAIL#user@example.com")
-- "Find threat scores for buyer 5491226" → query_table(tableName="Shield", pk="THREAT_SCORE#5491226", sk="EVENT#") then sum_property(data=query_result, property="score")
+- "Find threat scores for buyer 5491226" → 
+  Step 1: query_table(tableName="Shield", pk="THREAT_SCORE#5491226", sk="EVENT#") returns an array
+  Step 2: sum_property(data=<THE ACTUAL ARRAY FROM STEP 1>, property="amount")
+  NEVER: sum_property(property="amount") ← This will fail!
 
 Always use the exact PK/SK format specified above. When users mention vendor/buyer IDs or emails, construct the proper key format.`;
 

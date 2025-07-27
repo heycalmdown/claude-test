@@ -113,6 +113,12 @@ export class AIHandler {
         console.log('📄 Query result:', queryResult);
         return queryResult;
       case 'sum_property':
+        if (!parsedArgs.data || !Array.isArray(parsedArgs.data)) {
+          throw new Error('sum_property requires a valid "data" array parameter');
+        }
+        if (!parsedArgs.property) {
+          throw new Error('sum_property requires a "property" parameter');
+        }
         console.log(
           `🧮 Summing property '${parsedArgs.property}' from array of ${parsedArgs.data.length} objects`,
         );
@@ -131,20 +137,22 @@ export class AIHandler {
     messages: ChatMessage[],
   ): Promise<OpenAI.Chat.Completions.ChatCompletion> {
     try {
-      const response = await this.openai.chat.completions.create({
+      let currentMessages = [...messages];
+      let response = await this.openai.chat.completions.create({
         model: 'o4-mini',
-        messages,
+        messages: currentMessages,
         tools: this.tools,
         tool_choice: 'auto',
       });
 
-      const message = response.choices[0].message;
+      let message = response.choices[0].message;
 
-      console.log(
-        `🤖 AI wants to use tools: ${message.tool_calls ? 'YES' : 'NO'}`,
-      );
+      // Continue looping while the AI wants to use tools
+      while (message.tool_calls) {
+        console.log(
+          `🤖 AI wants to use tools: YES (${message.tool_calls.length} tools)`,
+        );
 
-      if (message.tool_calls) {
         const toolResults: ToolResult[] = [];
         for (const toolCall of message.tool_calls) {
           try {
@@ -164,18 +172,25 @@ export class AIHandler {
           }
         }
 
-        const followUpMessages: ChatMessage[] = [
-          ...messages,
+        // Add assistant message and tool results to conversation
+        currentMessages = [
+          ...currentMessages,
           message as ChatMessage,
           ...(toolResults as ChatMessage[]),
         ];
 
-        return await this.openai.chat.completions.create({
+        // Make another API call with the updated conversation
+        response = await this.openai.chat.completions.create({
           model: 'o4-mini',
-          messages: followUpMessages,
+          messages: currentMessages,
+          tools: this.tools,
+          tool_choice: 'auto',
         });
+
+        message = response.choices[0].message;
       }
 
+      console.log(`🤖 AI wants to use tools: NO - Final answer ready`);
       return response;
     } catch (error) {
       throw new Error(`AI chat failed: ${(error as Error).message}`);

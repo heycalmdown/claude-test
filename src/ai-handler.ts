@@ -88,51 +88,40 @@ export class AIHandler {
     console.log('📋 Arguments:', parsedArgs);
 
     switch (name) {
-    case 'get_item':
-      console.log(
-        `🔍 Getting item from ${parsedArgs.tableName} with pk: ${parsedArgs.pk}, sk: ${parsedArgs.sk}`,
-      );
-      const getResult = await this.dynamoTool.getItem(
-        parsedArgs.tableName,
-        parsedArgs.pk,
-        parsedArgs.sk,
-      );
-      console.log('📄 Get result:', getResult);
-      return getResult;
-    case 'query_table':
-      console.log(
-        `🔍 Querying table ${parsedArgs.tableName} with pk: ${parsedArgs.pk}, sk: ${parsedArgs.sk}, limit: ${parsedArgs.limit}`,
-      );
-      const queryResult = await this.dynamoTool.queryTable(
-        parsedArgs.tableName,
-        parsedArgs.pk,
-        parsedArgs.sk,
-        parsedArgs.limit,
-      );
-      console.log(`📄 Query result count: ${queryResult.length}`);
-      console.log('📄 Query result:', queryResult);
-
-      // Auto-calculate threat score sum if this is a threat score query
-      if (parsedArgs.tableName === 'Shield' && parsedArgs.pk?.startsWith('THREAT_SCORE#')) {
-        const sum = queryResult.reduce((total: number, item: any) => {
-          const value = item.amount;
+      case 'get_item':
+        console.log(
+          `🔍 Getting item from ${parsedArgs.tableName} with pk: ${parsedArgs.pk}, sk: ${parsedArgs.sk}`,
+        );
+        const getResult = await this.dynamoTool.getItem(
+          parsedArgs.tableName,
+          parsedArgs.pk,
+          parsedArgs.sk,
+        );
+        console.log('📄 Get result:', getResult);
+        return getResult;
+      case 'query_table':
+        console.log(
+          `🔍 Querying table ${parsedArgs.tableName} with pk: ${parsedArgs.pk}, sk: ${parsedArgs.sk}, limit: ${parsedArgs.limit}`,
+        );
+        const queryResult = await this.dynamoTool.queryTable(
+          parsedArgs.tableName,
+          parsedArgs.pk,
+          parsedArgs.sk,
+          parsedArgs.limit,
+        );
+        console.log(`📄 Query result count: ${queryResult.length}`);
+        console.log('📄 Query result:', queryResult);
+        return queryResult;
+      case 'sum_property':
+        console.log(
+          `🧮 Summing property '${parsedArgs.property}' from array of ${parsedArgs.data.length} objects`,
+        );
+        const sum = parsedArgs.data.reduce((total: number, item: any) => {
+          const value = item[parsedArgs.property];
           return total + (typeof value === 'number' ? value : 0);
         }, 0);
-        console.log(`🧮 Auto-calculated threat score total: ${sum}`);
-        return { events: queryResult, totalThreatScore: sum };
-      }
-
-      return queryResult;
-    case 'sum_property':
-      console.log(
-        `🧮 Summing property '${parsedArgs.property}' from array of ${parsedArgs.data.length} objects`,
-      );
-      const sum = parsedArgs.data.reduce((total: number, item: any) => {
-        const value = item[parsedArgs.property];
-        return total + (typeof value === 'number' ? value : 0);
-      }, 0);
-      console.log(`📊 Sum result: ${sum}`);
-      return sum;
+        console.log(`📊 Sum result: ${sum}`);
+        return sum;
     default:
       throw new Error(`Unknown tool: ${name}`);
     }
@@ -143,7 +132,7 @@ export class AIHandler {
   ): Promise<OpenAI.Chat.Completions.ChatCompletion> {
     try {
       const response = await this.openai.chat.completions.create({
-        model: 'gpt-4o-mini',
+        model: 'o4-mini',
         messages,
         tools: this.tools,
         tool_choice: 'auto',
@@ -182,7 +171,7 @@ export class AIHandler {
         ];
 
         return await this.openai.chat.completions.create({
-          model: 'gpt-4o-mini',
+          model: 'o4-mini',
           messages: followUpMessages,
         });
       }

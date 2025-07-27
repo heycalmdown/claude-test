@@ -1,10 +1,10 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { 
-  DynamoDBDocumentClient, 
-  GetCommand, 
-  QueryCommand 
+import {
+  DynamoDBDocumentClient,
+  GetCommand,
+  QueryCommand,
 } from '@aws-sdk/lib-dynamodb';
-import { DynamoDBKey, DynamoDBItem, QueryParams } from './types';
+import { DynamoDBItem } from './types';
 
 export class DynamoDBTool {
   private client: DynamoDBClient;
@@ -21,10 +21,10 @@ export class DynamoDBTool {
       if (sk) {
         key.SK = sk;
       }
-      
+
       const command = new GetCommand({
         TableName: tableName,
-        Key: key
+        Key: key,
       });
       const response = await this.docClient.send(command);
       return response.Item;
@@ -37,17 +37,17 @@ export class DynamoDBTool {
     try {
       let keyConditionExpression = 'PK = :pk';
       const expressionAttributeValues: Record<string, any> = { ':pk': pk };
-      
+
       if (sk) {
         keyConditionExpression += ' AND begins_with(SK, :sk)';
         expressionAttributeValues[':sk'] = sk;
       }
-      
+
       const command = new QueryCommand({
         TableName: tableName,
         KeyConditionExpression: keyConditionExpression,
         ExpressionAttributeValues: expressionAttributeValues,
-        Limit: limit
+        Limit: limit,
       });
       const response = await this.docClient.send(command);
       return response.Items || [];

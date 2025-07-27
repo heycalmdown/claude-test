@@ -46,13 +46,13 @@ Always use the exact PK/SK format specified above. When users mention vendor/buy
 export async function handleOneTimeQuery(aiHandler: AIHandler, query: string, systemPrompt: string = DEFAULT_SYSTEM_PROMPT): Promise<void> {
   const messages: ChatMessage[] = [
     {
-      role: "system",
-      content: systemPrompt
+      role: 'system',
+      content: systemPrompt,
     },
     {
-      role: "user",
-      content: query
-    }
+      role: 'user',
+      content: query,
+    },
   ];
 
   try {
@@ -60,7 +60,7 @@ export async function handleOneTimeQuery(aiHandler: AIHandler, query: string, sy
     console.log('Thinking...');
     const response = await aiHandler.chat(messages);
     const aiResponse = response.choices[0].message.content;
-    
+
     console.log(`Result: ${aiResponse}`);
   } catch (error) {
     console.error('Error:', (error as Error).message);
@@ -70,7 +70,7 @@ export async function handleOneTimeQuery(aiHandler: AIHandler, query: string, sy
 
 async function main(): Promise<void> {
   const apiKey = process.env.OPENAI_API_KEY;
-  
+
   if (!apiKey) {
     console.error('Error: OPENAI_API_KEY environment variable is required');
     process.exit(1);
@@ -78,7 +78,7 @@ async function main(): Promise<void> {
 
   const aiHandler = new AIHandler(
     apiKey,
-    process.env.AWS_REGION
+    process.env.AWS_REGION,
   );
 
   // Check if command line argument is provided for one-time execution
@@ -93,14 +93,14 @@ async function main(): Promise<void> {
 
   const rl = readline.createInterface({
     input: process.stdin,
-    output: process.stdout
+    output: process.stdout,
   });
 
   const messages: ChatMessage[] = [
     {
-      role: "system",
-      content: DEFAULT_SYSTEM_PROMPT
-    }
+      role: 'system',
+      content: DEFAULT_SYSTEM_PROMPT,
+    },
   ];
 
   console.log('DynamoDB AI Handler CLI');
@@ -112,9 +112,9 @@ async function main(): Promise<void> {
   console.log('');
 
   const askQuestion = () => {
-    rl.question('You: ', async (input) => {
+    rl.question('You: ', async(input) => {
       const trimmedInput = input.trim();
-      
+
       if (trimmedInput.toLowerCase() === 'exit' || trimmedInput.toLowerCase() === 'quit') {
         console.log('Goodbye!');
         rl.close();
@@ -135,21 +135,21 @@ async function main(): Promise<void> {
 
       try {
         messages.push({
-          role: "user",
-          content: trimmedInput
+          role: 'user',
+          content: trimmedInput,
         });
 
         console.log('Thinking...');
         const response = await aiHandler.chat(messages);
         const aiResponse = response.choices[0].message.content;
-        
+
         console.log(`AI: ${aiResponse}`);
         console.log('');
 
         // Add AI response to conversation history
         messages.push({
-          role: "assistant",
-          content: aiResponse || ""
+          role: 'assistant',
+          content: aiResponse || '',
         });
 
         askQuestion();

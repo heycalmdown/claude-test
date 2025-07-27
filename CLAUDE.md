@@ -129,6 +129,10 @@ npm ci
 ## Type Checking
 TypeScript files are executed directly using tsx. No build step required.
 
+## Shell Environment
+- **ZSH Configuration**: When using zsh as default shell, manually run `source ~/.zshrc` to load shell configuration
+- Claude Code runs in non-interactive shell environment, so `.zshrc` is not automatically loaded
+
 ## Important Notes
 - Program exits if OpenAI API key is missing from environment variables
 - AWS credentials automatically loaded from ~/.aws/credentials or environment variables

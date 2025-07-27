@@ -69,10 +69,13 @@ async function main(): Promise<void> {
   );
 
   // Check if command line argument is provided for one-time execution
-  const oneTimeQuery = process.argv[2];
-  if (oneTimeQuery) {
-    await handleOneTimeQuery(aiHandler, oneTimeQuery);
-    return;
+  const args = process.argv.slice(2);
+  if (args.length > 0 && args[0] === '--onetimequery') {
+    const query = args.slice(1).join(' ');
+    if (query) {
+      await handleOneTimeQuery(aiHandler, query);
+      return;
+    }
   }
 
   const rl = readline.createInterface({

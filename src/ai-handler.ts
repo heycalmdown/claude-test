@@ -102,7 +102,7 @@ export class AIHandler {
   async chat(messages: ChatMessage[]): Promise<OpenAI.Chat.Completions.ChatCompletion> {
     try {
       const response = await this.openai.chat.completions.create({
-        model: "gpt-4",
+        model: "gpt-4o-mini",
         messages,
         tools: this.tools,
         tool_choice: "auto"
@@ -139,7 +139,7 @@ export class AIHandler {
         ];
 
         return await this.openai.chat.completions.create({
-          model: "gpt-4",
+          model: "gpt-4o-mini",
           messages: followUpMessages
         });
       }

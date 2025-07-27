@@ -53,10 +53,42 @@ src/
 - Use AWS SDK v3
 
 ## Git Rules
-- **MAIN BRANCH PUSH RULE**: Always push main branch changes to upstream
-- After merging to main, immediately run: `git push origin main`
+
+### PR-Based Workflow (MANDATORY)
+1. **NEVER COMMIT DIRECTLY TO MAIN**: All changes must go through Pull Requests
+2. **Feature Branch Creation**: Create feature branches with descriptive names
+3. **Push to Remote**: `git push origin <feature-branch>`
+4. **Create PR**: Use GitHub CLI or web interface to create Pull Request
+5. **Immediate Squash Merge**: Merge PR immediately using squash merge
+6. **Pull Latest Main**: Always pull remote main after merging: `git pull origin main`
+
+### Detailed Workflow Steps
+```bash
+# 1. Create feature branch
+git checkout -b feature-descriptive-name
+
+# 2. Make changes and commit
+git add .
+git commit -m "Descriptive commit message"
+
+# 3. Push to remote
+git push origin feature-descriptive-name
+
+# 4. Create PR using GitHub CLI
+gh pr create --title "Feature Description" --body "Detailed description"
+
+# 5. Merge PR with squash (use GitHub web interface or CLI)
+gh pr merge --squash --delete-branch
+
+# 6. Switch to main and pull latest
+git checkout main
+git pull origin main
+```
+
+### Legacy Rules (DEPRECATED - Use PR workflow instead)
+- ~~**MAIN BRANCH PUSH RULE**: Always push main branch changes to upstream~~
+- ~~After merging to main, immediately run: `git push origin main`~~
 - **SQUASH MERGE RULE**: Always squash branch commits when merging to main
-- Use `git merge --squash <branch>` to create single commit without merge commits
 - This keeps main branch history clean with one commit per feature
 - This rule applies to all projects consistently
 

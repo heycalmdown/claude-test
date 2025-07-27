@@ -67,23 +67,31 @@ src/
 # 1. Create feature branch
 git checkout -b feature-descriptive-name
 
-# 2. Make changes and commit
+# 2. Auto-install dependencies if node_modules missing
+if [ ! -d "node_modules" ]; then npm ci; fi
+
+# 3. Make changes and commit
 git add .
 git commit -m "Descriptive commit message"
 
-# 3. Push to remote
+# 4. Push to remote
 git push origin feature-descriptive-name
 
-# 4. Create PR using GitHub CLI
+# 5. Create PR using GitHub CLI
 gh pr create --title "Feature Description" --body "Detailed description"
 
-# 5. Merge PR with squash (use GitHub web interface or CLI)
+# 6. Merge PR with squash (use GitHub web interface or CLI)
 gh pr merge --squash --delete-branch
 
-# 6. Switch to main and pull latest
+# 7. Switch to main and pull latest
 git checkout main
 git pull origin main
 ```
+
+### Dependency Management Rule
+- **NPM CI AUTOMATION**: When creating a new branch, if `node_modules` directory doesn't exist locally, automatically run `npm ci`
+- This ensures all dependencies are properly installed before starting development
+- Use `npm ci` instead of `npm install` for consistent, reproducible builds based on package-lock.json
 
 ### Legacy Rules (DEPRECATED - Use PR workflow instead)
 - ~~**MAIN BRANCH PUSH RULE**: Always push main branch changes to upstream~~

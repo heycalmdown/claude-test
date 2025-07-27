@@ -24,10 +24,8 @@ src/
 - `AWS_SECRET_ACCESS_KEY`: AWS secret key
 
 ## NPM Scripts
-- `npm run build`: TypeScript compilation
 - `npm run dev`: Development mode (using ts-node)
-- `npm start`: Build and run
-- `npm run watch`: TypeScript watch mode
+- `npm start`: Production mode (using ts-node)
 
 ## DynamoDB Tool Functions
 1. **get_item**: Get item from table using pk and optional sk
@@ -58,15 +56,18 @@ src/
 ## Git Rules
 - **MAIN BRANCH PUSH RULE**: Always push main branch changes to upstream
 - After merging to main, immediately run: `git push origin main`
+- **SQUASH MERGE RULE**: Always squash branch commits when merging to main
+- Use `git merge --squash <branch>` to create single commit without merge commits
+- This keeps main branch history clean with one commit per feature
 - This rule applies to all projects consistently
 
 ## How to Run
 1. Set environment variables: `cp .env.example .env`
 2. Development mode: `npm run dev`
-3. Production: `npm run build && npm start`
+3. Production: `npm start`
 
 ## Type Checking
-TypeScript compiler performs type checking during build. Build fails if there are type errors.
+TypeScript files are executed directly using ts-node. No build step required.
 
 ## Important Notes
 - Program exits if OpenAI API key is missing

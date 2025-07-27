@@ -55,6 +55,11 @@ src/
 - Follow OpenAI's ChatCompletionMessageParam type
 - Use AWS SDK v3
 
+## Git Rules
+- **MAIN BRANCH PUSH RULE**: Always push main branch changes to upstream
+- After merging to main, immediately run: `git push origin main`
+- This rule applies to all projects consistently
+
 ## How to Run
 1. Set environment variables: `cp .env.example .env`
 2. Development mode: `npm run dev`

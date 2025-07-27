@@ -182,13 +182,8 @@ export class AIHandler {
         ];
 
         return await this.openai.chat.completions.create({
-<<<<<<< HEAD
-          model: "gpt-4",
-          messages: followUpMessages,
-=======
           model: "gpt-4o-mini",
-          messages: followUpMessages
->>>>>>> origin/main
+          messages: followUpMessages,
         });
       }
 

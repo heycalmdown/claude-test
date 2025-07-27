@@ -1,5 +1,21 @@
 # DynamoDB AI Handler - Claude Reference
 
+## ⚠️ CRITICAL: Shell Environment Setup (MUST READ FIRST)
+**MANDATORY**: Claude Code runs in non-interactive shell mode. **You MUST run `source ~/.zshrc` before executing any commands** that depend on environment variables or shell configurations.
+
+### Required for EVERY session:
+```bash
+# ALWAYS run this first when starting any task
+source ~/.zshrc
+```
+
+### Why this is critical:
+- Environment variables (OPENAI_API_KEY, AWS credentials) may not be loaded
+- Shell aliases and functions won't be available
+- PATH modifications in .zshrc won't take effect
+
+**REMEMBER**: Start every session with `source ~/.zshrc` or commands may fail!
+
 ## Project Overview
 AI handler with DynamoDB tool access capability. Written in TypeScript for type safety.
 
@@ -128,10 +144,6 @@ npm ci
 
 ## Type Checking
 TypeScript files are executed directly using tsx. No build step required.
-
-## Shell Environment
-- **ZSH Configuration**: When using zsh as default shell, manually run `source ~/.zshrc` to load shell configuration
-- Claude Code runs in non-interactive shell environment, so `.zshrc` is not automatically loaded
 
 ## Important Notes
 - Program exits if OpenAI API key is missing from environment variables

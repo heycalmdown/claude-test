@@ -1,0 +1,5 @@
+echo "🔧 Running ESLint autofix..."
+npm run lint:fix
+
+echo "🔍 Running lint check..."
+npm run lint

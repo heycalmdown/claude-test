@@ -25,6 +25,7 @@ src/
 ## NPM Scripts
 - `npm run dev`: Development mode (using tsx)
 - `npm start`: Production mode (using tsx)
+- `npm ci`: Clean install dependencies (used in workflow)
 
 ## DynamoDB Tool Functions
 1. **get_item**: Get item from table using pk and optional sk
@@ -65,15 +66,22 @@ src/
 ## Git Rules
 
 ### PR-Based Workflow (MANDATORY)
-1. **NEVER COMMIT DIRECTLY TO MAIN**: All changes must go through Pull Requests
-2. **Feature Branch Creation**: Create feature branches with descriptive names
-3. **Push to Remote**: `git push origin <feature-branch>`
-4. **Create PR**: Use GitHub CLI or web interface to create Pull Request
-5. **Immediate Squash Merge**: Merge PR immediately using squash merge
-6. **Pull Latest Main**: Always pull remote main after merging: `git pull origin main`
+1. **UPDATE MAIN FIRST**: Before creating feature branch, pull latest main and run npm ci
+2. **NEVER COMMIT DIRECTLY TO MAIN**: All changes must go through Pull Requests
+3. **Feature Branch Creation**: Create feature branches with descriptive names
+4. **Push to Remote**: `git push origin <feature-branch>`
+5. **Create PR**: Use GitHub CLI or web interface to create Pull Request
+6. **Immediate Squash Merge**: Merge PR immediately using squash merge
+7. **Pull Latest Main**: Always pull remote main after merging and run npm ci
 
 ### Detailed Workflow Steps
 ```bash
+# 0. MANDATORY: Before creating any new feature branch, ensure main is up-to-date
+# This prevents merge conflicts and ensures consistent dependencies
+git checkout main
+git pull origin main
+npm ci
+
 # 1. Create feature branch
 git checkout -b feature-descriptive-name
 
@@ -94,8 +102,10 @@ gh pr create --title "Feature Description" --body "Detailed description"
 gh pr merge --squash --delete-branch
 
 # 7. Switch to main and pull latest
+# Always run npm ci after pulling to ensure dependencies are up-to-date
 git checkout main
 git pull origin main
+npm ci
 ```
 
 ### Dependency Management Rule

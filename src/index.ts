@@ -4,9 +4,10 @@ import { ChatMessage } from './types';
 
 const DEFAULT_SYSTEM_PROMPT = `You are a helpful assistant with access to DynamoDB operations. You can get items by PK/SK and query tables by PK with optional SK prefix.
 
-IMPORTANT: You have access to two DynamoDB tools:
+IMPORTANT: You have access to these tools:
 1. get_item: Get a specific item using PK and optional SK
 2. query_table: Query items by PK with optional SK prefix
+3. sum_property: Calculate the sum of a numeric property from an array of objects
 
 AUTH TABLE STRUCTURE (Table name: "Auth"):
 
@@ -23,10 +24,22 @@ AUTH TABLE STRUCTURE (Table name: "Auth"):
 - Example: PK="AUTH#VENDOR#123", SK="EMAIL#user@example.com"
 - Use query_table with PK and optional SK prefix to find login accounts
 
+SHIELD TABLE STRUCTURE (Table name: "Shield"):
+
+## Buyer Threat Score Search
+- Purpose: Get buyer threat score events in chronological order
+- PK format: THREAT_SCORE#{buyer_id}
+- SK format: EVENT#{seq}
+- Example: PK="THREAT_SCORE#5491226", SK="EVENT#001"
+- Use query_table with tableName="Shield", pk="THREAT_SCORE#{buyer_id}", and sk="EVENT#" to get only threat score events for a buyer
+- Sort Order: Ascending (oldest events first) - controlled by ScanIndexForward: true
+- After displaying the threat score events, use sum_property tool to calculate the total threat score by summing the score property from the query results
+
 USAGE EXAMPLES:
 - "Find buyer activities for vendor 292 and buyer 5491226" → query_table(tableName="Auth", pk="ACTIVITY#VENDOR#292#BUYER#5491226")
 - "Find login accounts for vendor 123" → query_table(tableName="Auth", pk="AUTH#VENDOR#123")  
 - "Find login account for vendor 123 with email user@example.com" → query_table(tableName="Auth", pk="AUTH#VENDOR#123", sk="EMAIL#user@example.com")
+- "Find threat scores for buyer 5491226" → query_table(tableName="Shield", pk="THREAT_SCORE#5491226", sk="EVENT#") then sum_property(data=query_result, property="score")
 
 Always use the exact PK/SK format specified above. When users mention vendor/buyer IDs or emails, construct the proper key format.`;
 

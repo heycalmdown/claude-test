@@ -46,11 +46,15 @@ src/
 - **Example**: PK=`AUTH#VENDOR#123`, SK=`EMAIL#user@example.com`
 - **Usage**: Use query_table with PK and optional SK prefix to find login accounts
 
+## Shield Table Structure (Table: "Shield")
+
 ### Buyer Threat Score Search
-- **Purpose**: Search for buyer threat scores
-- **PK Format**: `THREAT#VENDOR#{vendor_id}#BUYER#{buyer_id}`
-- **Example**: `THREAT#VENDOR#292#BUYER#7816161`
-- **Usage**: Use query_table with this PK to get threat score for a specific buyer
+- **Purpose**: Get buyer threat score events in chronological order
+- **PK Format**: `THREAT_SCORE#{buyer_id}`
+- **SK Format**: `EVENT#{seq}`
+- **Example**: PK=`THREAT_SCORE#5491226`, SK=`EVENT#001`
+- **Usage**: Use query_table with tableName="Shield" and pk=`THREAT_SCORE#{buyer_id}` to get all threat score events for a buyer
+- **Sort Order**: Ascending (oldest events first) - controlled by ScanIndexForward: true
 
 ## Coding Rules
 - All code written in TypeScript
@@ -81,25 +85,33 @@ npm ci
 # 1. Create feature branch
 git checkout -b feature-descriptive-name
 
-# 2. Make changes and commit
+# 2. Auto-install dependencies if node_modules missing
+if [ ! -d "node_modules" ]; then npm ci; fi
+
+# 3. Make changes and commit
 git add .
 git commit -m "Descriptive commit message"
 
-# 3. Push to remote
+# 4. Push to remote
 git push origin feature-descriptive-name
 
-# 4. Create PR using GitHub CLI
+# 5. Create PR using GitHub CLI
 gh pr create --title "Feature Description" --body "Detailed description"
 
-# 5. Merge PR with squash (use GitHub web interface or CLI)
+# 6. Merge PR with squash (use GitHub web interface or CLI)
 gh pr merge --squash --delete-branch
 
-# 6. Switch to main and pull latest
+# 7. Switch to main and pull latest
 # Always run npm ci after pulling to ensure dependencies are up-to-date
 git checkout main
 git pull origin main
 npm ci
 ```
+
+### Dependency Management Rule
+- **NPM CI AUTOMATION**: When creating a new branch, if `node_modules` directory doesn't exist locally, automatically run `npm ci`
+- This ensures all dependencies are properly installed before starting development
+- Use `npm ci` instead of `npm install` for consistent, reproducible builds based on package-lock.json
 
 ### Legacy Rules (DEPRECATED - Use PR workflow instead)
 - ~~**MAIN BRANCH PUSH RULE**: Always push main branch changes to upstream~~

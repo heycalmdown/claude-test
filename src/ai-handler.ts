@@ -1,6 +1,6 @@
-import OpenAI from 'openai';
-import { DynamoDBTool } from './dynamodb-tool';
-import { ChatMessage, ToolCall, Tool, ToolResult } from './types';
+import OpenAI from "openai";
+import { DynamoDBTool } from "./dynamodb-tool";
+import { ChatMessage, ToolCall, Tool, ToolResult } from "./types";
 
 export class AIHandler {
   private openai: OpenAI;
@@ -15,17 +15,21 @@ export class AIHandler {
         type: "function",
         function: {
           name: "get_item",
-          description: "Get an item from DynamoDB table using pk and optional sk",
+          description:
+            "Get an item from DynamoDB table using pk and optional sk",
           parameters: {
             type: "object",
             properties: {
-              tableName: { type: "string", description: "The DynamoDB table name" },
+              tableName: {
+                type: "string",
+                description: "The DynamoDB table name",
+              },
               pk: { type: "string", description: "The partition key" },
-              sk: { type: "string", description: "The sort key (optional)" }
+              sk: { type: "string", description: "The sort key (optional)" },
             },
-            required: ["tableName", "pk"]
-          }
-        }
+            required: ["tableName", "pk"],
+          },
+        },
       },
       {
         type: "function",
@@ -35,30 +39,44 @@ export class AIHandler {
           parameters: {
             type: "object",
             properties: {
-              tableName: { type: "string", description: "The DynamoDB table name" },
+              tableName: {
+                type: "string",
+                description: "The DynamoDB table name",
+              },
               pk: { type: "string", description: "The partition key" },
-              sk: { type: "string", description: "The sort key prefix (optional)" },
-              limit: { type: "number", description: "Maximum number of items to return" }
+              sk: {
+                type: "string",
+                description: "The sort key prefix (optional)",
+              },
+              limit: {
+                type: "number",
+                description: "Maximum number of items to return",
+              },
             },
-            required: ["tableName", "pk"]
-          }
-        }
+            required: ["tableName", "pk"],
+          },
+        },
       },
       {
         type: "function",
         function: {
           name: "sum_property",
-          description: "Calculate the sum of a numeric property from an array of objects",
+          description:
+            "Calculate the sum of a numeric property from an array of objects",
           parameters: {
             type: "object",
             properties: {
-              data: { type: "array", description: "Array of objects to sum" },
-              property: { type: "string", description: "Property name to sum" }
+              data: {
+                type: "array",
+                items: { type: "object" },
+                description: "Array of objects to sum",
+              },
+              property: { type: "string", description: "Property name to sum" },
             },
-            required: ["data", "property"]
-          }
-        }
-      }
+            required: ["data", "property"],
+          },
+        },
+      },
     ];
   }
 
@@ -70,27 +88,48 @@ export class AIHandler {
     console.log(`📋 Arguments:`, parsedArgs);
 
     switch (name) {
-      case 'get_item':
-        console.log(`🔍 Getting item from ${parsedArgs.tableName} with pk: ${parsedArgs.pk}, sk: ${parsedArgs.sk}`);
-        const getResult = await this.dynamoTool.getItem(parsedArgs.tableName, parsedArgs.pk, parsedArgs.sk);
+      case "get_item":
+        console.log(
+          `🔍 Getting item from ${parsedArgs.tableName} with pk: ${parsedArgs.pk}, sk: ${parsedArgs.sk}`
+        );
+        const getResult = await this.dynamoTool.getItem(
+          parsedArgs.tableName,
+          parsedArgs.pk,
+          parsedArgs.sk
+        );
         console.log(`📄 Get result:`, getResult);
         return getResult;
-      case 'query_table':
-        console.log(`🔍 Querying table ${parsedArgs.tableName} with pk: ${parsedArgs.pk}, sk: ${parsedArgs.sk}, limit: ${parsedArgs.limit}`);
+      case "query_table":
+        console.log(
+          `🔍 Querying table ${parsedArgs.tableName} with pk: ${parsedArgs.pk}, sk: ${parsedArgs.sk}, limit: ${parsedArgs.limit}`
+        );
         const queryResult = await this.dynamoTool.queryTable(
-          parsedArgs.tableName, 
-          parsedArgs.pk, 
-          parsedArgs.sk, 
+          parsedArgs.tableName,
+          parsedArgs.pk,
+          parsedArgs.sk,
           parsedArgs.limit
         );
         console.log(`📄 Query result count: ${queryResult.length}`);
         console.log(`📄 Query result:`, queryResult);
+        
+        // Auto-calculate threat score sum if this is a threat score query
+        if (parsedArgs.tableName === 'Shield' && parsedArgs.pk?.startsWith('THREAT_SCORE#')) {
+          const sum = queryResult.reduce((total: number, item: any) => {
+            const value = item.amount;
+            return total + (typeof value === 'number' ? value : 0);
+          }, 0);
+          console.log(`🧮 Auto-calculated threat score total: ${sum}`);
+          return { events: queryResult, totalThreatScore: sum };
+        }
+        
         return queryResult;
-      case 'sum_property':
-        console.log(`🧮 Summing property '${parsedArgs.property}' from array of ${parsedArgs.data.length} objects`);
+      case "sum_property":
+        console.log(
+          `🧮 Summing property '${parsedArgs.property}' from array of ${parsedArgs.data.length} objects`
+        );
         const sum = parsedArgs.data.reduce((total: number, item: any) => {
           const value = item[parsedArgs.property];
-          return total + (typeof value === 'number' ? value : 0);
+          return total + (typeof value === "number" ? value : 0);
         }, 0);
         console.log(`📊 Sum result: ${sum}`);
         return sum;
@@ -99,18 +138,22 @@ export class AIHandler {
     }
   }
 
-  async chat(messages: ChatMessage[]): Promise<OpenAI.Chat.Completions.ChatCompletion> {
+  async chat(
+    messages: ChatMessage[]
+  ): Promise<OpenAI.Chat.Completions.ChatCompletion> {
     try {
       const response = await this.openai.chat.completions.create({
         model: "gpt-4o-mini",
         messages,
         tools: this.tools,
-        tool_choice: "auto"
+        tool_choice: "auto",
       });
 
       const message = response.choices[0].message;
 
-      console.log(`🤖 AI wants to use tools: ${message.tool_calls ? 'YES' : 'NO'}`);
+      console.log(
+        `🤖 AI wants to use tools: ${message.tool_calls ? "YES" : "NO"}`
+      );
 
       if (message.tool_calls) {
         const toolResults: ToolResult[] = [];
@@ -120,14 +163,14 @@ export class AIHandler {
             toolResults.push({
               tool_call_id: toolCall.id,
               role: "tool",
-              content: JSON.stringify(result ?? null)
+              content: JSON.stringify(result ?? null),
             });
           } catch (error) {
             console.log(`❌ Tool call error:`, error);
             toolResults.push({
               tool_call_id: toolCall.id,
               role: "tool",
-              content: JSON.stringify({ error: (error as Error).message })
+              content: JSON.stringify({ error: (error as Error).message }),
             });
           }
         }
@@ -135,12 +178,17 @@ export class AIHandler {
         const followUpMessages: ChatMessage[] = [
           ...messages,
           message as ChatMessage,
-          ...toolResults as ChatMessage[]
+          ...(toolResults as ChatMessage[]),
         ];
 
         return await this.openai.chat.completions.create({
+<<<<<<< HEAD
+          model: "gpt-4",
+          messages: followUpMessages,
+=======
           model: "gpt-4o-mini",
           messages: followUpMessages
+>>>>>>> origin/main
         });
       }
 

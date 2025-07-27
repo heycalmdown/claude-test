@@ -111,6 +111,17 @@ export class AIHandler {
         );
         console.log(`📄 Query result count: ${queryResult.length}`);
         console.log(`📄 Query result:`, queryResult);
+        
+        // Auto-calculate threat score sum if this is a threat score query
+        if (parsedArgs.tableName === 'Shield' && parsedArgs.pk?.startsWith('THREAT_SCORE#')) {
+          const sum = queryResult.reduce((total: number, item: any) => {
+            const value = item.amount;
+            return total + (typeof value === 'number' ? value : 0);
+          }, 0);
+          console.log(`🧮 Auto-calculated threat score total: ${sum}`);
+          return { events: queryResult, totalThreatScore: sum };
+        }
+        
         return queryResult;
       case "sum_property":
         console.log(
@@ -132,7 +143,7 @@ export class AIHandler {
   ): Promise<OpenAI.Chat.Completions.ChatCompletion> {
     try {
       const response = await this.openai.chat.completions.create({
-        model: "gpt-4",
+        model: "gpt-4o-mini",
         messages,
         tools: this.tools,
         tool_choice: "auto",
@@ -171,8 +182,13 @@ export class AIHandler {
         ];
 
         return await this.openai.chat.completions.create({
+<<<<<<< HEAD
           model: "gpt-4",
           messages: followUpMessages,
+=======
+          model: "gpt-4o-mini",
+          messages: followUpMessages
+>>>>>>> origin/main
         });
       }
 

@@ -24,8 +24,8 @@ src/
 - `AWS_SECRET_ACCESS_KEY`: AWS secret key
 
 ## NPM Scripts
-- `npm run dev`: Development mode (using ts-node)
-- `npm start`: Production mode (using ts-node)
+- `npm run dev`: Development mode (using tsx)
+- `npm start`: Production mode (using tsx)
 
 ## DynamoDB Tool Functions
 1. **get_item**: Get item from table using pk and optional sk
@@ -67,7 +67,7 @@ src/
 3. Production: `npm start`
 
 ## Type Checking
-TypeScript files are executed directly using ts-node. No build step required.
+TypeScript files are executed directly using tsx. No build step required.
 
 ## Important Notes
 - Program exits if OpenAI API key is missing

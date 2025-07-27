@@ -55,4 +55,5 @@ export class DynamoDBTool {
       throw new Error(`Failed to query table: ${(error as Error).message}`);
     }
   }
+
 }

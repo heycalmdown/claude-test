@@ -43,6 +43,21 @@ export class AIHandler {
             required: ["tableName", "pk"]
           }
         }
+      },
+      {
+        type: "function",
+        function: {
+          name: "sum_property",
+          description: "Calculate the sum of a numeric property from an array of objects",
+          parameters: {
+            type: "object",
+            properties: {
+              data: { type: "array", description: "Array of objects to sum" },
+              property: { type: "string", description: "Property name to sum" }
+            },
+            required: ["data", "property"]
+          }
+        }
       }
     ];
   }
@@ -71,6 +86,14 @@ export class AIHandler {
         console.log(`📄 Query result count: ${queryResult.length}`);
         console.log(`📄 Query result:`, queryResult);
         return queryResult;
+      case 'sum_property':
+        console.log(`🧮 Summing property '${parsedArgs.property}' from array of ${parsedArgs.data.length} objects`);
+        const sum = parsedArgs.data.reduce((total: number, item: any) => {
+          const value = item[parsedArgs.property];
+          return total + (typeof value === 'number' ? value : 0);
+        }, 0);
+        console.log(`📊 Sum result: ${sum}`);
+        return sum;
       default:
         throw new Error(`Unknown tool: ${name}`);
     }
@@ -97,7 +120,7 @@ export class AIHandler {
             toolResults.push({
               tool_call_id: toolCall.id,
               role: "tool",
-              content: JSON.stringify(result)
+              content: JSON.stringify(result ?? null)
             });
           } catch (error) {
             console.log(`❌ Tool call error:`, error);

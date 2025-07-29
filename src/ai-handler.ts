@@ -139,7 +139,7 @@ export class AIHandler {
     try {
       let currentMessages = [...messages];
       let response = await this.openai.chat.completions.create({
-        model: 'o4-mini',
+        model: 'gpt-4.1-mini',
         messages: currentMessages,
         tools: this.tools,
         tool_choice: 'auto',
@@ -181,7 +181,7 @@ export class AIHandler {
 
         // Make another API call with the updated conversation
         response = await this.openai.chat.completions.create({
-          model: 'o4-mini',
+          model: 'gpt-4.1-mini',
           messages: currentMessages,
           tools: this.tools,
           tool_choice: 'auto',

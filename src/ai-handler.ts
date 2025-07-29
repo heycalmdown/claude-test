@@ -77,6 +77,36 @@ export class AIHandler {
           },
         },
       },
+      {
+        type: 'function',
+        function: {
+          name: 'format_timestamp',
+          description:
+            'Convert milliseconds timestamp to human-readable date or vice versa',
+          parameters: {
+            type: 'object',
+            properties: {
+              timestamp: {
+                type: 'number',
+                description: 'Milliseconds timestamp to convert to date',
+              },
+              dateString: {
+                type: 'string',
+                description: 'Date string to convert to milliseconds timestamp',
+              },
+              timezone: {
+                type: 'string',
+                description: 'Timezone for formatting (default: UTC)',
+              },
+              format: {
+                type: 'string',
+                description: 'Output format: "iso", "locale", "relative" (default: "iso")',
+              },
+            },
+            required: [],
+          },
+        },
+      },
     ];
   }
 
@@ -128,6 +158,76 @@ export class AIHandler {
         }, 0);
         console.log(`📊 Sum result: ${sum}`);
         return sum;
+      case 'format_timestamp':
+        console.log(`🕒 Formatting timestamp with args:`, parsedArgs);
+        
+        if (parsedArgs.timestamp) {
+          // Convert milliseconds timestamp to human-readable date
+          const date = new Date(parsedArgs.timestamp);
+          const timezone = parsedArgs.timezone || 'UTC';
+          const format = parsedArgs.format || 'iso';
+          
+          let result: any = {
+            timestamp: parsedArgs.timestamp,
+            date: date,
+            timezone: timezone
+          };
+          
+          switch (format) {
+            case 'iso':
+              result.formatted = date.toISOString();
+              break;
+            case 'locale':
+              result.formatted = date.toLocaleString('en-US', { 
+                timeZone: timezone,
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+              });
+              break;
+            case 'relative':
+              const now = Date.now();
+              const diff = now - parsedArgs.timestamp;
+              const seconds = Math.floor(diff / 1000);
+              const minutes = Math.floor(seconds / 60);
+              const hours = Math.floor(minutes / 60);
+              const days = Math.floor(hours / 24);
+              
+              if (days > 0) {
+                result.formatted = `${days} day${days === 1 ? '' : 's'} ago`;
+              } else if (hours > 0) {
+                result.formatted = `${hours} hour${hours === 1 ? '' : 's'} ago`;
+              } else if (minutes > 0) {
+                result.formatted = `${minutes} minute${minutes === 1 ? '' : 's'} ago`;
+              } else {
+                result.formatted = `${seconds} second${seconds === 1 ? '' : 's'} ago`;
+              }
+              break;
+          }
+          
+          console.log(`📅 Timestamp conversion result:`, result);
+          return result;
+        } else if (parsedArgs.dateString) {
+          // Convert date string to milliseconds timestamp
+          const date = new Date(parsedArgs.dateString);
+          if (isNaN(date.getTime())) {
+            throw new Error(`Invalid date string: ${parsedArgs.dateString}`);
+          }
+          
+          const result = {
+            dateString: parsedArgs.dateString,
+            timestamp: date.getTime(),
+            iso: date.toISOString()
+          };
+          
+          console.log(`📅 Date string conversion result:`, result);
+          return result;
+        } else {
+          throw new Error('format_timestamp requires either "timestamp" or "dateString" parameter');
+        }
     default:
       throw new Error(`Unknown tool: ${name}`);
     }

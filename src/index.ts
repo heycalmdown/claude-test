@@ -1,6 +1,6 @@
-import * as readline from 'readline';
-import { AIHandler } from './ai-handler';
-import { ChatMessage } from './types';
+import * as readline from "readline";
+import { AIHandler } from "./ai-handler";
+import { ChatMessage } from "./types";
 
 const DEFAULT_SYSTEM_PROMPT = `You are a helpful assistant with access to DynamoDB operations. You can get items by PK/SK and query tables by PK with optional SK prefix.
 
@@ -35,41 +35,48 @@ SHIELD TABLE STRUCTURE (Table name: "Shield"):
 - Example: PK="THREAT_SCORE#5491226", SK="EVENT#001"
 - Use query_table with tableName="Shield", pk="THREAT_SCORE#{buyer_id}", and sk="EVENT#" to get only threat score events for a buyer
 - Sort Order: Ascending (oldest events first) - controlled by ScanIndexForward: true
-- After querying threat score events, use sum_property tool WITH THE QUERY RESULT DATA to calculate the total threat score
-- IMPORTANT: You must pass the entire array returned by query_table as the "data" parameter to sum_property
+
+THREAT SCORE RESPONSE FORMAT:
+When user asks for threat scores, follow this EXACT sequence:
+1. Query the threat score events using query_table
+2. Display a brief summary list showing: date (formatted from createdAt timestamp), reason (from detail.reason), amount for each event
+   Format: "2025-01-15: threat-found (1 point)"
+3. Then use sum_property tool to calculate and display the total threat score
+4. IMPORTANT: You must pass the entire array returned by query_table as the "data" parameter to sum_property
 
 USAGE EXAMPLES:
 - "Find buyer activities for vendor 292 and buyer 5491226" → query_table(tableName="Auth", pk="ACTIVITY#VENDOR#292#BUYER#5491226")
 - "Find login accounts for vendor 123" → query_table(tableName="Auth", pk="AUTH#VENDOR#123")  
 - "Find login account for vendor 123 with email user@example.com" → query_table(tableName="Auth", pk="AUTH#VENDOR#123", sk="EMAIL#user@example.com")
-- "Find threat scores for buyer 5491226" → 
-  Step 1: query_table(tableName="Shield", pk="THREAT_SCORE#5491226", sk="EVENT#") returns an array
-  Step 2: sum_property(data=<THE ACTUAL ARRAY FROM STEP 1>, property="amount")
-  NEVER: sum_property(property="amount") ← This will fail!
+- "Find threat scores for buyer 5491226" → query_table(tableName="Shield", pk="THREAT_SCORE#5491226", sk="EVENT#")
 
 Always use the exact PK/SK format specified above. When users mention vendor/buyer IDs or emails, construct the proper key format.`;
 
-export async function handleOneTimeQuery(aiHandler: AIHandler, query: string, systemPrompt: string = DEFAULT_SYSTEM_PROMPT): Promise<void> {
+export async function handleOneTimeQuery(
+  aiHandler: AIHandler,
+  query: string,
+  systemPrompt: string = DEFAULT_SYSTEM_PROMPT
+): Promise<void> {
   const messages: ChatMessage[] = [
     {
-      role: 'system',
+      role: "system",
       content: systemPrompt,
     },
     {
-      role: 'user',
+      role: "user",
       content: query,
     },
   ];
 
   try {
     console.log(`Processing query: ${query}`);
-    console.log('Thinking...');
+    console.log("Thinking...");
     const response = await aiHandler.chat(messages);
     const aiResponse = response.choices[0].message.content;
 
     console.log(`Result: ${aiResponse}`);
   } catch (error) {
-    console.error('Error:', (error as Error).message);
+    console.error("Error:", (error as Error).message);
     process.exit(1);
   }
 }
@@ -78,19 +85,16 @@ async function main(): Promise<void> {
   const apiKey = process.env.OPENAI_API_KEY;
 
   if (!apiKey) {
-    console.error('Error: OPENAI_API_KEY environment variable is required');
+    console.error("Error: OPENAI_API_KEY environment variable is required");
     process.exit(1);
   }
 
-  const aiHandler = new AIHandler(
-    apiKey,
-    process.env.AWS_REGION,
-  );
+  const aiHandler = new AIHandler(apiKey, process.env.AWS_REGION);
 
   // Check if command line argument is provided for one-time execution
   const args = process.argv.slice(2);
-  if (args.length > 0 && args[0] === '--onetimequery') {
-    const query = args.slice(1).join(' ');
+  if (args.length > 0 && args[0] === "--onetimequery") {
+    const query = args.slice(1).join(" ");
     if (query) {
       await handleOneTimeQuery(aiHandler, query);
       return;
@@ -104,32 +108,37 @@ async function main(): Promise<void> {
 
   const messages: ChatMessage[] = [
     {
-      role: 'system',
+      role: "system",
       content: DEFAULT_SYSTEM_PROMPT,
     },
   ];
 
-  console.log('DynamoDB AI Handler CLI');
-  console.log('Available commands:');
+  console.log("DynamoDB AI Handler CLI");
+  console.log("Available commands:");
   console.log('- Buyer Activity: "Find activities for vendor X buyer Y"');
-  console.log('- Login Account: "Find login for vendor X" or "Find login for vendor X email Y"');
+  console.log(
+    '- Login Account: "Find login for vendor X" or "Find login for vendor X email Y"'
+  );
   console.log('- Type "exit" or "quit" to quit');
   console.log('- Type "clear" to clear conversation history');
-  console.log('');
+  console.log("");
 
   const askQuestion = () => {
-    rl.question('You: ', async(input) => {
+    rl.question("You: ", async (input) => {
       const trimmedInput = input.trim();
 
-      if (trimmedInput.toLowerCase() === 'exit' || trimmedInput.toLowerCase() === 'quit') {
-        console.log('Goodbye!');
+      if (
+        trimmedInput.toLowerCase() === "exit" ||
+        trimmedInput.toLowerCase() === "quit"
+      ) {
+        console.log("Goodbye!");
         rl.close();
         return;
       }
 
-      if (trimmedInput.toLowerCase() === 'clear') {
+      if (trimmedInput.toLowerCase() === "clear") {
         messages.splice(1); // Keep only system message
-        console.log('Conversation history cleared.');
+        console.log("Conversation history cleared.");
         askQuestion();
         return;
       }
@@ -141,26 +150,26 @@ async function main(): Promise<void> {
 
       try {
         messages.push({
-          role: 'user',
+          role: "user",
           content: trimmedInput,
         });
 
-        console.log('Thinking...');
+        console.log("Thinking...");
         const response = await aiHandler.chat(messages);
         const aiResponse = response.choices[0].message.content;
 
         console.log(`AI: ${aiResponse}`);
-        console.log('');
+        console.log("");
 
         // Add AI response to conversation history
         messages.push({
-          role: 'assistant',
-          content: aiResponse || '',
+          role: "assistant",
+          content: aiResponse || "",
         });
 
         askQuestion();
       } catch (error) {
-        console.error('Error:', (error as Error).message);
+        console.error("Error:", (error as Error).message);
         askQuestion();
       }
     });

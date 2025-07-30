@@ -55,7 +55,8 @@ Always use the exact PK/SK format specified above. When users mention vendor/buy
 export async function handleOneTimeQuery(
   aiHandler: AIHandler,
   query: string,
-  systemPrompt: string = DEFAULT_SYSTEM_PROMPT
+  systemPrompt: string = DEFAULT_SYSTEM_PROMPT,
+  debugMode: boolean = false
 ): Promise<void> {
   const messages: ChatMessage[] = [
     {
@@ -69,8 +70,10 @@ export async function handleOneTimeQuery(
   ];
 
   try {
-    console.log(`Processing query: ${query}`);
-    console.log("Thinking...");
+    if (debugMode) {
+      console.log(`Processing query: ${query}`);
+      console.log("Thinking...");
+    }
     const response = await aiHandler.chat(messages);
     const aiResponse = response.choices[0].message.content;
 
@@ -89,14 +92,33 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  const aiHandler = new AIHandler(apiKey, process.env.AWS_REGION);
+  // Parse command line arguments
+  const args = process.argv.slice(2);
+  let debugMode = false;
+  let filteredArgs: string[] = [];
+
+  // Process arguments
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === "--debug" || args[i] === "-d") {
+      debugMode = true;
+    } else {
+      filteredArgs.push(args[i]);
+    }
+  }
+
+  // Enable debug by default for onetimequery mode
+  const isOneTimeQuery = filteredArgs.length > 0 && filteredArgs[0] === "--onetimequery";
+  if (isOneTimeQuery) {
+    debugMode = true; // Enable debug by default for onetimequery
+  }
+
+  const aiHandler = new AIHandler(apiKey, process.env.AWS_REGION, debugMode);
 
   // Check if command line argument is provided for one-time execution
-  const args = process.argv.slice(2);
-  if (args.length > 0 && args[0] === "--onetimequery") {
-    const query = args.slice(1).join(" ");
+  if (isOneTimeQuery) {
+    const query = filteredArgs.slice(1).join(" ");
     if (query) {
-      await handleOneTimeQuery(aiHandler, query);
+      await handleOneTimeQuery(aiHandler, query, DEFAULT_SYSTEM_PROMPT, debugMode);
       return;
     }
   }

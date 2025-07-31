@@ -1,6 +1,6 @@
-import * as readline from "readline";
-import { AIHandler } from "./ai-handler";
-import { ChatMessage } from "./types";
+import * as readline from 'readline';
+import { AIHandler } from './ai-handler';
+import { ChatMessage } from './types';
 
 const DEFAULT_SYSTEM_PROMPT = `You are a helpful assistant with access to DynamoDB operations. You can get items by PK/SK and query tables by PK with optional SK prefix.
 
@@ -56,15 +56,15 @@ export async function handleOneTimeQuery(
   aiHandler: AIHandler,
   query: string,
   systemPrompt: string = DEFAULT_SYSTEM_PROMPT,
-  debugMode: boolean = false
+  debugMode: boolean = false,
 ): Promise<void> {
   const messages: ChatMessage[] = [
     {
-      role: "system",
+      role: 'system',
       content: systemPrompt,
     },
     {
-      role: "user",
+      role: 'user',
       content: query,
     },
   ];
@@ -72,14 +72,14 @@ export async function handleOneTimeQuery(
   try {
     if (debugMode) {
       console.log(`Processing query: ${query}`);
-      console.log("Thinking...");
+      console.log('Thinking...');
     }
     const response = await aiHandler.chat(messages);
     const aiResponse = response.choices[0].message.content;
 
     console.log(`Result: ${aiResponse}`);
   } catch (error) {
-    console.error("Error:", (error as Error).message);
+    console.error('Error:', (error as Error).message);
     process.exit(1);
   }
 }
@@ -88,18 +88,18 @@ async function main(): Promise<void> {
   const apiKey = process.env.OPENAI_API_KEY;
 
   if (!apiKey) {
-    console.error("Error: OPENAI_API_KEY environment variable is required");
+    console.error('Error: OPENAI_API_KEY environment variable is required');
     process.exit(1);
   }
 
   // Parse command line arguments
   const args = process.argv.slice(2);
   let debugMode = false;
-  let filteredArgs: string[] = [];
+  const filteredArgs: string[] = [];
 
   // Process arguments
   for (let i = 0; i < args.length; i++) {
-    if (args[i] === "--debug" || args[i] === "-d") {
+    if (args[i] === '--debug' || args[i] === '-d') {
       debugMode = true;
     } else {
       filteredArgs.push(args[i]);
@@ -107,7 +107,7 @@ async function main(): Promise<void> {
   }
 
   // Enable debug by default for onetimequery mode
-  const isOneTimeQuery = filteredArgs.length > 0 && filteredArgs[0] === "--onetimequery";
+  const isOneTimeQuery = filteredArgs.length > 0 && filteredArgs[0] === '--onetimequery';
   if (isOneTimeQuery) {
     debugMode = true; // Enable debug by default for onetimequery
   }
@@ -116,7 +116,7 @@ async function main(): Promise<void> {
 
   // Check if command line argument is provided for one-time execution
   if (isOneTimeQuery) {
-    const query = filteredArgs.slice(1).join(" ");
+    const query = filteredArgs.slice(1).join(' ');
     if (query) {
       await handleOneTimeQuery(aiHandler, query, DEFAULT_SYSTEM_PROMPT, debugMode);
       return;
@@ -130,37 +130,37 @@ async function main(): Promise<void> {
 
   const messages: ChatMessage[] = [
     {
-      role: "system",
+      role: 'system',
       content: DEFAULT_SYSTEM_PROMPT,
     },
   ];
 
-  console.log("DynamoDB AI Handler CLI");
-  console.log("Available commands:");
+  console.log('DynamoDB AI Handler CLI');
+  console.log('Available commands:');
   console.log('- Buyer Activity: "Find activities for vendor X buyer Y"');
   console.log(
-    '- Login Account: "Find login for vendor X" or "Find login for vendor X email Y"'
+    '- Login Account: "Find login for vendor X" or "Find login for vendor X email Y"',
   );
   console.log('- Type "exit" or "quit" to quit');
   console.log('- Type "clear" to clear conversation history');
-  console.log("");
+  console.log('');
 
   const askQuestion = () => {
-    rl.question("You: ", async (input) => {
+    rl.question('You: ', async(input) => {
       const trimmedInput = input.trim();
 
       if (
-        trimmedInput.toLowerCase() === "exit" ||
-        trimmedInput.toLowerCase() === "quit"
+        trimmedInput.toLowerCase() === 'exit' ||
+        trimmedInput.toLowerCase() === 'quit'
       ) {
-        console.log("Goodbye!");
+        console.log('Goodbye!');
         rl.close();
         return;
       }
 
-      if (trimmedInput.toLowerCase() === "clear") {
+      if (trimmedInput.toLowerCase() === 'clear') {
         messages.splice(1); // Keep only system message
-        console.log("Conversation history cleared.");
+        console.log('Conversation history cleared.');
         askQuestion();
         return;
       }
@@ -172,26 +172,26 @@ async function main(): Promise<void> {
 
       try {
         messages.push({
-          role: "user",
+          role: 'user',
           content: trimmedInput,
         });
 
-        console.log("Thinking...");
+        console.log('Thinking...');
         const response = await aiHandler.chat(messages);
         const aiResponse = response.choices[0].message.content;
 
         console.log(`AI: ${aiResponse}`);
-        console.log("");
+        console.log('');
 
         // Add AI response to conversation history
         messages.push({
-          role: "assistant",
-          content: aiResponse || "",
+          role: 'assistant',
+          content: aiResponse || '',
         });
 
         askQuestion();
       } catch (error) {
-        console.error("Error:", (error as Error).message);
+        console.error('Error:', (error as Error).message);
         askQuestion();
       }
     });
